@@ -1,15 +1,13 @@
-# Stage 1: Install Composer dependencies
 FROM composer:2 AS vendor
 
 WORKDIR /app
 
-COPY composer.json composer.lock ./
+# Copy the entire Laravel project
+COPY . .
+
+# Install PHP dependencies
 RUN composer install --no-dev --optimize-autoloader --no-interaction
 
-COPY . .
-RUN composer dump-autoload --optimize
-
-# Stage 2: Runtime
 FROM dunglas/frankenphp:1-php8.4
 
 RUN install-php-extensions \
