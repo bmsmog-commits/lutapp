@@ -7,10 +7,15 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-#[Fillable(['bible_book_id', 'chapter', 'verse', 'text', 'translation_id'])]
-class BibleVerse extends Model
+#[Fillable(['user_id', 'bible_book_id', 'chapter', 'verse', 'translation_id', 'note'])]
+class BibleBookmark extends Model
 {
     use HasFactory;
+
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
 
     public function book(): BelongsTo
     {
@@ -22,3 +27,4 @@ class BibleVerse extends Model
         return $this->belongsTo(BibleTranslation::class, 'translation_id');
     }
 }
+

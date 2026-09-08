@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -167,9 +167,9 @@
 </head>
 <body>
     <header class="topbar">
-        <a class="brand" href="{{ auth()->check() ? route('notes.index') : route('login') }}">
-            <span class="brand-mark">L</span>
-            <span>Lutapp Notes</span>
+        <a class="brand" href="{{ auth()->check() ? route('dashboard') : route('login') }}">
+            <span class="brand-mark">LT</span>
+            <span>Lutapp</span>
         </a>
         <div class="topbar-spacer"></div>
         @auth
@@ -182,6 +182,7 @@
                 <a href="{{ route('bible.index') }}">Bible</a>
             </nav>
             <span class="muted">{{ auth()->user()->name }}</span>
+            <a class="nav" href="{{ route('language.select') }}">{{ __('messages.change_language') }}</a>
             <form action="{{ route('logout') }}" method="post">
                 @csrf
                 <button type="submit">Logout</button>

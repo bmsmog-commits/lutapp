@@ -12,13 +12,11 @@ class ExampleTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_guests_are_sent_to_login_from_the_home_page(): void
+    public function test_new_guests_are_sent_to_language_selection_from_the_home_page(): void
     {
         $response = $this->get('/');
 
-        $response->assertRedirect('/dashboard');
-
-        $this->get('/dashboard')->assertRedirect('/login');
+        $response->assertRedirect('/language');
     }
 
     public function test_user_can_create_a_locked_note_and_unlock_it(): void

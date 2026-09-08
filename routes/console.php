@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\BibleBook;
+use App\Models\BibleTranslation;
 use App\Models\BibleVerse;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
@@ -25,6 +26,14 @@ Artisan::command('bible:import {path} {--translation=KJV}', function (string $pa
     }
 
     $translation = strtoupper((string) $this->option('translation'));
+    $translationId = BibleTranslation::where('code', $translation)->value('id');
+
+    if (! $translationId) {
+        $this->error("Unknown translation code: {$translation}");
+
+        return 1;
+    }
+
     $books = BibleBook::all()
         ->keyBy(fn (BibleBook $book) => strtolower($book->name))
         ->merge(BibleBook::all()->keyBy(fn (BibleBook $book) => strtolower($book->abbreviation)));
@@ -45,7 +54,7 @@ Artisan::command('bible:import {path} {--translation=KJV}', function (string $pa
                 'bible_book_id' => $book->id,
                 'chapter' => (int) $item['chapter'],
                 'verse' => (int) $item['verse'],
-                'translation' => $translation,
+                'translation_id' => $translationId,
             ],
             ['text' => (string) $item['text']]
         );

@@ -14,6 +14,8 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
+        $this->call(BibleTranslationSeeder::class);
         $this->call(BibleBookSeeder::class);
+        $this->call(BibleVerseSeeder::class);
     }
 }

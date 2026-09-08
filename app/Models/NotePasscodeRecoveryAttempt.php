@@ -6,17 +6,17 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 
-#[Fillable(['title', 'body', 'color', 'passcode_hash', 'is_pinned'])]
-class Note extends Model
+#[Fillable(['user_id', 'note_id', 'attempts', 'last_attempt_at', 'locked_until'])]
+class NotePasscodeRecoveryAttempt extends Model
 {
     use HasFactory;
 
     protected function casts(): array
     {
         return [
-            'is_pinned' => 'boolean',
+            'last_attempt_at' => 'datetime',
+            'locked_until' => 'datetime',
         ];
     }
 
@@ -25,13 +25,8 @@ class Note extends Model
         return $this->belongsTo(User::class);
     }
 
-    public function recoveryAttempts(): HasMany
+    public function note(): BelongsTo
     {
-        return $this->hasMany(NotePasscodeRecoveryAttempt::class);
-    }
-
-    public function isLocked(): bool
-    {
-        return filled($this->passcode_hash);
+        return $this->belongsTo(Note::class);
     }
 }

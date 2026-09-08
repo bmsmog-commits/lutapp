@@ -207,6 +207,7 @@
                                     <button type="submit">Unlock</button>
                                 </div>
                             </form>
+                            <a class="muted" href="{{ route('notes.recover-passcode', $note) }}">Forgot this note's passcode?</a>
                             @error("unlock_{$note->id}")
                                 <div class="muted">{{ $message }}</div>
                             @enderror
