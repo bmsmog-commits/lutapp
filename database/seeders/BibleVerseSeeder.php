@@ -7,6 +7,17 @@ use App\Models\BibleTranslation;
 use App\Models\BibleVerse;
 use Illuminate\Database\Seeder;
 
+/**
+ * DEVELOPMENT/SAMPLE DATA ONLY — NOT A COMPLETE BIBLE IMPORT.
+ *
+ * Phase 4 data audit: this seeder loads exactly one chapter (Genesis 1, 31 verses)
+ * of one translation (KJV, public domain). It exists to exercise the reader/search/
+ * bookmark/highlight code paths locally. Do not present the Bible as "complete" in
+ * any UI, and do not extend this seeder with copyrighted translation text — use the
+ * import pipeline (see App\Services\Bible\BibleImportService) with a legally
+ * verified, redistributable source instead. Check
+ * BibleTranslation::isLegallyRedistributable() before importing any translation.
+ */
 class BibleVerseSeeder extends Seeder
 {
     public function run(): void
