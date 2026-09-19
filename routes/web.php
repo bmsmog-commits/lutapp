@@ -5,6 +5,7 @@ use App\Http\Controllers\BibleController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DepartmentController;
 use App\Http\Controllers\EventController;
+use App\Http\Controllers\FileController;
 use App\Http\Controllers\HymnController;
 use App\Http\Controllers\LanguageController;
 use App\Http\Controllers\NoteController;
@@ -19,6 +20,8 @@ Route::get('/language', [LanguageController::class, 'show'])->name('language.sel
 Route::post('/language', [LanguageController::class, 'update'])
     ->middleware('throttle:10,1')
     ->name('language.update');
+
+Route::get('/files/{media}', [FileController::class, 'show'])->name('files.show');
 
 Route::middleware('guest')->group(function () {
     Route::get('/register', [AuthController::class, 'showRegister'])->name('register');
@@ -114,6 +117,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/organizations/{organization}/members', [OrganizationMemberController::class, 'store'])->name('organizations.members.store');
     Route::put('/organizations/{organization}/members/{member}', [OrganizationMemberController::class, 'update'])->name('organizations.members.update');
     Route::delete('/organizations/{organization}/members/{member}', [OrganizationMemberController::class, 'destroy'])->name('organizations.members.destroy');
+
+    Route::delete('/files/{media}', [FileController::class, 'destroy'])->name('files.destroy');
 
     Route::get('/organizations/{organization}/departments', [DepartmentController::class, 'index'])->name('organizations.departments.index');
     Route::post('/organizations/{organization}/departments', [DepartmentController::class, 'store'])->name('organizations.departments.store');
