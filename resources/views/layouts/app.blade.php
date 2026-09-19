@@ -180,6 +180,8 @@
                 <a href="{{ route('events.index') }}">Calendar</a>
                 <a href="{{ route('hymns.index') }}">Hymns</a>
                 <a href="{{ route('bible.index') }}">Bible</a>
+                <a href="{{ route('organizations.index') }}">Organizations</a>
+                <a href="{{ route('profile.show') }}">Profile</a>
             </nav>
             <span class="muted">{{ auth()->user()->name }}</span>
             <a class="nav" href="{{ route('language.select') }}">{{ __('messages.change_language') }}</a>

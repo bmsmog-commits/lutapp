@@ -3,10 +3,14 @@
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BibleController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\DepartmentController;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\HymnController;
 use App\Http\Controllers\LanguageController;
 use App\Http\Controllers\NoteController;
+use App\Http\Controllers\OrganizationController;
+use App\Http\Controllers\OrganizationMemberController;
+use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\TodoController;
 use Illuminate\Support\Facades\Route;
 
@@ -90,4 +94,29 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/bible/bookmark/remove', [BibleController::class, 'removeBookmark'])->name('bible.removeBookmark');
     Route::post('/bible/highlight', [BibleController::class, 'highlight'])->name('bible.highlight');
     Route::post('/bible/highlight/remove', [BibleController::class, 'removeHighlight'])->name('bible.removeHighlight');
+
+    Route::get('/profile', [ProfileController::class, 'show'])->name('profile.show');
+    Route::get('/profile/edit', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
+
+    Route::get('/organizations', [OrganizationController::class, 'index'])->name('organizations.index');
+    Route::get('/organizations/create', [OrganizationController::class, 'create'])->name('organizations.create');
+    Route::post('/organizations', [OrganizationController::class, 'store'])->name('organizations.store');
+    Route::get('/organizations/{organization}', [OrganizationController::class, 'show'])->name('organizations.show');
+    Route::get('/organizations/{organization}/edit', [OrganizationController::class, 'edit'])->name('organizations.edit');
+    Route::put('/organizations/{organization}', [OrganizationController::class, 'update'])->name('organizations.update');
+    Route::delete('/organizations/{organization}', [OrganizationController::class, 'destroy'])->name('organizations.destroy');
+
+    Route::get('/organizations/{organization}/members', [OrganizationMemberController::class, 'index'])->name('organizations.members.index');
+    Route::get('/organizations/{organization}/members/add', [OrganizationMemberController::class, 'create'])
+        ->middleware('throttle:30,1')
+        ->name('organizations.members.create');
+    Route::post('/organizations/{organization}/members', [OrganizationMemberController::class, 'store'])->name('organizations.members.store');
+    Route::put('/organizations/{organization}/members/{member}', [OrganizationMemberController::class, 'update'])->name('organizations.members.update');
+    Route::delete('/organizations/{organization}/members/{member}', [OrganizationMemberController::class, 'destroy'])->name('organizations.members.destroy');
+
+    Route::get('/organizations/{organization}/departments', [DepartmentController::class, 'index'])->name('organizations.departments.index');
+    Route::post('/organizations/{organization}/departments', [DepartmentController::class, 'store'])->name('organizations.departments.store');
+    Route::put('/organizations/{organization}/departments/{department}', [DepartmentController::class, 'update'])->name('organizations.departments.update');
+    Route::delete('/organizations/{organization}/departments/{department}', [DepartmentController::class, 'destroy'])->name('organizations.departments.destroy');
 });

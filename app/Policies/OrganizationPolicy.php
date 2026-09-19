@@ -8,6 +8,16 @@ use Spatie\Permission\PermissionRegistrar;
 
 class OrganizationPolicy
 {
+    public function viewAny(User $user): bool
+    {
+        return true;
+    }
+
+    public function create(User $user): bool
+    {
+        return true;
+    }
+
     public function view(User $user, Organization $organization): bool
     {
         if ($organization->visibility === 'public') {
