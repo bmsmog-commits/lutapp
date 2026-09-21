@@ -8,6 +8,7 @@ use App\Models\BibleHighlight;
 use App\Models\BibleReadingHistory;
 use App\Models\BibleTranslation;
 use App\Models\BibleVerse;
+use App\Services\PreferenceService;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -18,17 +19,26 @@ class BibleController extends Controller
     /**
      * Display the Bible reader with verses, translation switcher, and user features
      */
-    public function index(Request $request): View
+    public function index(Request $request, PreferenceService $preferences): View
     {
         $translations = BibleTranslation::where('is_active', true)->orderBy('name')->get();
-        
-        // Get translation ID from request or use first available
+
+        // Get translation ID from request, else the user's saved preference
+        // (Phase 21), else the first available translation — unchanged
+        // fallback order for anyone who has never set a preference.
         $translationId = $request->integer('translation_id');
+        if (!$translationId && $request->user()) {
+            $preferredId = $preferences->bible($request->user())['translation_id'];
+            if ($preferredId && $translations->contains('id', $preferredId)) {
+                $translationId = $preferredId;
+            }
+        }
         if (!$translationId) {
             $translationId = $translations->first()->id ?? 1;
         }
-        
+
         $selectedTranslation = BibleTranslation::findOrFail($translationId);
+        $bibleFontSize = $request->user() ? $preferences->bible($request->user())['font_size'] : 'medium';
 
         $books = BibleBook::orderBy('sort_order')->get();
         $currentBook = $request->filled('book')
@@ -86,6 +96,7 @@ class BibleController extends Controller
             'verses' => $verses,
             'userBookmarks' => $userBookmarks,
             'userHighlights' => $userHighlights,
+            'bibleFontSize' => $bibleFontSize,
         ]);
     }
 

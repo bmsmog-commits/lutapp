@@ -85,7 +85,7 @@
                     </div>
 
                     <!-- Verses -->
-                    <div class="space-y-6">
+                    <div class="space-y-6" style="font-size: {{ ['small' => '14px', 'large' => '19px'][$bibleFontSize ?? 'medium'] ?? '16px' }};">
                         @forelse($verses as $verse)
                             @php
                                 $isBookmarked = $userBookmarks->where('verse', $verse->verse)->first();

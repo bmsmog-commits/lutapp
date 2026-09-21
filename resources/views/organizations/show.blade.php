@@ -1,6 +1,9 @@
 @extends('layouts.app')
 
 @section('content')
+    @if ($organization->logo)
+        <img src="{{ route('files.show', $organization->logo) }}" alt="{{ $organization->name }} logo" style="width:64px;height:64px;border-radius:8px;object-fit:cover;margin-bottom:8px;">
+    @endif
     <h1>{{ $organization->name }}</h1>
     <p class="muted">{{ ucfirst($organization->type) }} &middot; {{ ucfirst($organization->visibility) }} &middot; {{ ucfirst($organization->status) }}</p>
 

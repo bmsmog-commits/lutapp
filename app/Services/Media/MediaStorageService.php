@@ -60,6 +60,47 @@ class MediaStorageService
         }
     }
 
+    /**
+     * Moves a media file between the public and private disks to match a new
+     * visibility, so a visibility change actually revokes/grants access rather
+     * than leaving bytes reachable at their old, now-incorrect disk/URL (Phase 10:
+     * flipping only the `visibility` column would be meaningless for a file
+     * still sitting under the web-reachable `public` disk).
+     */
+    public function changeVisibility(MediaFile $media, string $visibility): MediaFile
+    {
+        if ($media->visibility === $visibility) {
+            return $media;
+        }
+
+        $newDisk = $visibility === 'public' ? 'public' : 'local';
+        $oldDisk = $media->disk;
+        $path = $media->path;
+
+        if ($newDisk === $oldDisk) {
+            $media->update(['visibility' => $visibility]);
+
+            return $media;
+        }
+
+        if (! Storage::disk($oldDisk)->exists($path)) {
+            // Nothing to move — the physical file is already gone. Update the
+            // metadata so it at least stops being reported as public, and log
+            // the inconsistency rather than silently pretending nothing is wrong.
+            Log::warning("MediaStorageService: cannot move missing physical file for media #{$media->id} during visibility change.");
+            $media->update(['visibility' => $visibility]);
+
+            return $media;
+        }
+
+        Storage::disk($newDisk)->put($path, Storage::disk($oldDisk)->get($path));
+        Storage::disk($oldDisk)->delete($path);
+
+        $media->update(['disk' => $newDisk, 'visibility' => $visibility]);
+
+        return $media;
+    }
+
     public function delete(MediaFile $media): void
     {
         try {

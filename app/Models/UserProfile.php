@@ -14,6 +14,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
     'bio',
     'phone',
     'profile_image_path',
+    'profile_photo_media_id',
     'country',
     'state',
     'city',
@@ -27,5 +28,10 @@ class UserProfile extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function profilePhoto(): BelongsTo
+    {
+        return $this->belongsTo(MediaFile::class, 'profile_photo_media_id');
     }
 }

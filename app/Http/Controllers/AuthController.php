@@ -86,6 +86,20 @@ class AuthController extends Controller
         }
 
         $user = Auth::user();
+
+        // Checked before session regeneration — a suspended/deactivated
+        // account never gets a valid authenticated session at all, matching
+        // EnsureAccountIsActive's enforcement for an already-logged-in user.
+        if ($user->isAccountHidden()) {
+            Auth::logout();
+
+            return back()->withErrors([
+                'email' => $user->account_status === 'suspended'
+                    ? 'Your account has been suspended.'
+                    : 'Your account has been deactivated.',
+            ])->onlyInput('email');
+        }
+
         $request->session()->regenerate();
 
         // Check if email is verified

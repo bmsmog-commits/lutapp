@@ -18,10 +18,17 @@ class OrganizationPolicy
         return true;
     }
 
-    public function view(User $user, Organization $organization): bool
+    // Nullable $user (unlike the other abilities here) so the Phase 14 public
+    // directory profile page can authorize guests — same pattern already used
+    // by ResourcePolicy::view and JobPolicy::view.
+    public function view(?User $user, Organization $organization): bool
     {
         if ($organization->visibility === 'public') {
             return true;
+        }
+
+        if (! $user) {
+            return false;
         }
 
         return $this->isOwner($user, $organization) || $this->isActiveMember($user, $organization);

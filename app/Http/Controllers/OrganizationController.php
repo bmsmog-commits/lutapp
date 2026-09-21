@@ -5,9 +5,10 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreOrganizationRequest;
 use App\Http\Requests\UpdateOrganizationRequest;
 use App\Models\Organization;
+use App\Services\Media\InvalidMediaFileException;
+use App\Services\Media\MediaStorageService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 use Spatie\Permission\PermissionRegistrar;
 
@@ -71,20 +72,54 @@ class OrganizationController extends Controller
 
     public function update(UpdateOrganizationRequest $request, Organization $organization): RedirectResponse
     {
-        $data = $request->validated();
-        unset($data['logo']);
-
-        if ($request->hasFile('logo')) {
-            if ($organization->logo_path) {
-                Storage::disk('public')->delete($organization->logo_path);
-            }
-
-            $data['logo_path'] = $request->file('logo')->store('organization-logos', 'public');
-        }
-
-        $organization->update($data);
+        $organization->update($request->validated());
 
         return redirect()->route('organizations.show', $organization)->with('status', 'Organization updated.');
+    }
+
+    public function storeLogo(Request $request, Organization $organization, MediaStorageService $storage): RedirectResponse
+    {
+        $this->authorize('update', $organization);
+
+        $request->validate([
+            'logo' => ['required', 'file', 'image', 'mimes:jpeg,png,webp', 'max:'.config('media.max_size_kb.image')],
+        ]);
+
+        $oldLogo = $organization->logo;
+
+        // Logo visibility follows the organization's own visibility (Rule 11/19):
+        // a public organization's logo is servable to guests viewing its public
+        // profile, but a private organization's logo requires the same membership
+        // check as any other private organization file.
+        $visibility = $organization->visibility === 'public' ? 'public' : 'private';
+
+        try {
+            $newLogo = $storage->store($request->file('logo'), ['organization_id' => $organization->id], $visibility);
+        } catch (InvalidMediaFileException $e) {
+            return back()->withErrors(['logo' => $e->getMessage()]);
+        }
+
+        $organization->update(['logo_media_id' => $newLogo->id]);
+
+        if ($oldLogo) {
+            $storage->delete($oldLogo);
+        }
+
+        return redirect()->route('organizations.edit', $organization)->with('status', 'Organization logo updated.');
+    }
+
+    public function destroyLogo(Request $request, Organization $organization, MediaStorageService $storage): RedirectResponse
+    {
+        $this->authorize('update', $organization);
+
+        $logo = $organization->logo;
+
+        if ($logo) {
+            $organization->update(['logo_media_id' => null]);
+            $storage->delete($logo);
+        }
+
+        return redirect()->route('organizations.edit', $organization)->with('status', 'Organization logo removed.');
     }
 
     public function destroy(Request $request, Organization $organization): RedirectResponse

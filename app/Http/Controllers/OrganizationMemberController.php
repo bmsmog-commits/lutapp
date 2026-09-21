@@ -4,9 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\AddOrganizationMemberRequest;
 use App\Http\Requests\UpdateOrganizationMemberRequest;
+use App\Models\Notification;
 use App\Models\Organization;
 use App\Models\OrganizationMember;
 use App\Models\User;
+use App\Services\NotificationService;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -76,7 +78,7 @@ class OrganizationMemberController extends Controller
         ]);
     }
 
-    public function store(AddOrganizationMemberRequest $request, Organization $organization): RedirectResponse
+    public function store(AddOrganizationMemberRequest $request, Organization $organization, NotificationService $notifications): RedirectResponse
     {
         $userId = $request->validated('user_id');
 
@@ -107,6 +109,16 @@ class OrganizationMemberController extends Controller
             return back()->withErrors(['user_id' => 'This user is already a member of this organization.']);
         }
 
+        $notifications->notify(
+            recipient: User::findOrFail($userId),
+            type: 'organization.member.added',
+            title: 'You were added to '.$organization->name,
+            actor: $request->user(),
+            organization: $organization,
+            relatedType: Notification::RELATED_ORGANIZATION,
+            relatedId: $organization->id,
+        );
+
         return redirect()->route('organizations.members.index', $organization)->with('status', 'Member added.');
     }
 
@@ -126,14 +138,27 @@ class OrganizationMemberController extends Controller
         return redirect()->route('organizations.members.index', $organization)->with('status', 'Member updated.');
     }
 
-    public function destroy(Request $request, Organization $organization, OrganizationMember $member): RedirectResponse
+    public function destroy(Request $request, Organization $organization, OrganizationMember $member, NotificationService $notifications): RedirectResponse
     {
         $this->assertBelongsToOrganization($organization, $member);
         $this->authorize('delete', $member);
 
+        $removedUser = $member->user;
+
         app(PermissionRegistrar::class)->setPermissionsTeamId($organization->id);
         $member->user->syncRoles([]);
         $member->delete();
+
+        // No organization context on this one — the recipient can no longer
+        // access the organization, so a notification carrying a live
+        // organization_id/link into a place they've just lost access to would
+        // be exactly the kind of leak Phase 18's privacy rules forbid.
+        $notifications->notify(
+            recipient: $removedUser,
+            type: 'organization.member.removed',
+            title: 'You were removed from '.$organization->name,
+            actor: $request->user(),
+        );
 
         return redirect()->route('organizations.members.index', $organization)->with('status', 'Member removed.');
     }

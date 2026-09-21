@@ -3,7 +3,28 @@
 @section('content')
     <h1>Edit {{ $organization->name }}</h1>
 
-    <form method="post" action="{{ route('organizations.update', $organization) }}" enctype="multipart/form-data" style="max-width:520px;display:grid;gap:12px;">
+    <div style="max-width:520px;margin-bottom:20px;">
+        @if ($organization->logo)
+            <img src="{{ route('files.show', $organization->logo) }}" alt="Organization logo" style="width:96px;height:96px;border-radius:8px;object-fit:cover;margin-bottom:12px;">
+        @else
+            <div style="width:96px;height:96px;border-radius:8px;background:var(--surface);border:1px solid var(--line);display:grid;place-items:center;color:var(--muted);margin-bottom:12px;">No logo</div>
+        @endif
+
+        <form method="post" action="{{ route('organizations.logo.store', $organization) }}" enctype="multipart/form-data" style="margin-bottom:6px;">
+            @csrf
+            <input type="file" name="logo" accept="image/jpeg,image/png,image/webp" required>
+            <button class="btn" type="submit">Upload logo</button>
+        </form>
+        @if ($organization->logo)
+            <form method="post" action="{{ route('organizations.logo.destroy', $organization) }}">
+                @csrf
+                @method('delete')
+                <button class="btn-danger" type="submit" onclick="return confirm('Remove the organization logo?')">Remove logo</button>
+            </form>
+        @endif
+    </div>
+
+    <form method="post" action="{{ route('organizations.update', $organization) }}" style="max-width:520px;display:grid;gap:12px;">
         @csrf
         @method('put')
 
@@ -29,11 +50,6 @@
         <div class="field">
             <label for="description">Description</label>
             <textarea id="description" name="description">{{ old('description', $organization->description) }}</textarea>
-        </div>
-
-        <div class="field">
-            <label for="logo">Logo</label>
-            <input class="input" id="logo" name="logo" type="file" accept="image/png,image/jpeg,image/webp">
         </div>
 
         <div class="field">

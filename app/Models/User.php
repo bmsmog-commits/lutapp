@@ -89,6 +89,99 @@ class User extends Authenticatable implements MustVerifyEmail
             ->withTimestamps();
     }
 
+    public function ownedResources(): HasMany
+    {
+        return $this->hasMany(Resource::class);
+    }
+
+    public function savedResources(): BelongsToMany
+    {
+        return $this->belongsToMany(Resource::class, 'saved_resources')->withTimestamps();
+    }
+
+    public function conversationParticipations(): HasMany
+    {
+        return $this->hasMany(ConversationParticipant::class);
+    }
+
+    public function conversations(): BelongsToMany
+    {
+        return $this->belongsToMany(Conversation::class, 'conversation_participants')
+            ->withPivot(['last_read_at'])
+            ->withTimestamps();
+    }
+
+    public function sentMessages(): HasMany
+    {
+        return $this->hasMany(Message::class, 'sender_id');
+    }
+
+    public function ownedJobs(): HasMany
+    {
+        return $this->hasMany(Job::class);
+    }
+
+    public function jobApplications(): HasMany
+    {
+        return $this->hasMany(JobApplication::class, 'applicant_id');
+    }
+
+    public function donations(): HasMany
+    {
+        return $this->hasMany(Donation::class);
+    }
+
+    public function eventRsvps(): HasMany
+    {
+        return $this->hasMany(EventRsvp::class);
+    }
+
+    public function audioResources(): HasMany
+    {
+        return $this->hasMany(AudioResource::class);
+    }
+
+    public function audioCollections(): HasMany
+    {
+        return $this->hasMany(AudioCollection::class);
+    }
+
+    // Deliberately overrides the Notifiable trait's own notifications()
+    // relation (which targets Laravel's built-in DatabaseNotification /
+    // 'notifications' table — unused anywhere in this app) with this app's
+    // own centralized Notification model on a distinctly-named table.
+    public function notifications(): HasMany
+    {
+        return $this->hasMany(Notification::class)->latest();
+    }
+
+    public function unreadNotificationsCount(): int
+    {
+        return $this->notifications()->unread()->count();
+    }
+
+    // Users this account follows.
+    public function following(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'user_connections', 'follower_id', 'following_id')->withTimestamps();
+    }
+
+    // Users who follow this account.
+    public function followers(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'user_connections', 'following_id', 'follower_id')->withTimestamps();
+    }
+
+    public function blockedUsers(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'user_blocks', 'blocker_id', 'blocked_id')->withTimestamps();
+    }
+
+    public function blockedByUsers(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'user_blocks', 'blocked_id', 'blocker_id')->withTimestamps();
+    }
+
     /**
      * Get the attributes that should be cast.
      *
@@ -99,6 +192,43 @@ class User extends Authenticatable implements MustVerifyEmail
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'is_moderator' => 'boolean',
+            'account_status_changed_at' => 'datetime',
         ];
+    }
+
+    // Deliberately independent of Spatie's org-scoped roles — see the
+    // migration comment on is_moderator. An Organization Owner/Admin is NOT
+    // automatically a platform moderator.
+    public function isModerator(): bool
+    {
+        return (bool) $this->is_moderator;
+    }
+
+    public function isAccountActive(): bool
+    {
+        return $this->account_status === 'active';
+    }
+
+    // 'restricted' keeps the profile/content visible but limits new outbound
+    // interaction (see ModerationService) — 'suspended'/'deactivated' hide
+    // everything, same as a non-discoverable profile.
+    public function isAccountHidden(): bool
+    {
+        return in_array($this->account_status, ['suspended', 'deactivated'], true);
+    }
+
+    // Used by content-creation policies (Job/Resource/AudioResource/
+    // OrganizationEvent) to enforce the "restricted" account status's
+    // documented behavior: profile/content stays visible, but the user can't
+    // create new outbound content. Existing content and edits are untouched.
+    public function isRestricted(): bool
+    {
+        return $this->account_status === 'restricted';
+    }
+
+    public function reportsSubmitted(): HasMany
+    {
+        return $this->hasMany(Report::class, 'reporter_id');
     }
 }

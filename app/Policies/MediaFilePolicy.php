@@ -3,6 +3,7 @@
 namespace App\Policies;
 
 use App\Models\MediaFile;
+use App\Models\Message;
 use App\Models\Organization;
 use App\Models\User;
 
@@ -15,7 +16,11 @@ class MediaFilePolicy
         }
 
         if ($media->isPersonal()) {
-            return $media->user_id === $user->id;
+            // A message attachment is stored under the sender's own user_id (the
+            // MediaStorageService owner precedent), so the plain owner check above
+            // would wrongly deny the other participant — check that path too
+            // before falling back to deny.
+            return $media->user_id === $user->id || $this->isMessageAttachmentParticipant($user, $media);
         }
 
         // Deliberately NOT OrganizationPolicy::view — that governs the organization's
@@ -23,6 +28,13 @@ class MediaFilePolicy
         // membership. A private file needs actual membership, independent of whether
         // the organization itself happens to have a public profile.
         return $this->isOrganizationMember($user, $media->organization);
+    }
+
+    protected function isMessageAttachmentParticipant(User $user, MediaFile $media): bool
+    {
+        return Message::where('media_id', $media->id)
+            ->whereHas('conversation.participants', fn ($q) => $q->where('user_id', $user->id))
+            ->exists();
     }
 
     public function download(User $user, MediaFile $media): bool

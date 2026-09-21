@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" data-theme="{{ auth()->check() ? app(\App\Services\PreferenceService::class)->theme(auth()->user()) : 'system' }}">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -20,6 +20,44 @@
             --surface: #f8fafd;
             --brand: #fbbc04;
             --danger: #b3261e;
+        }
+
+        /* Phase 21 appearance preference — same variables the whole app
+           already uses, just redefined for dark. 'system' (the default,
+           unchanged for every existing user) follows the OS preference;
+           an explicit 'dark' choice always applies regardless of OS. */
+        html[data-theme="dark"] {
+            --ink: #e8eaed;
+            --muted: #9aa0a6;
+            --line: #3c4043;
+            --surface: #202124;
+            --danger: #f28b82;
+        }
+        html[data-theme="dark"] body { background: var(--surface); }
+        html[data-theme="dark"] .panel,
+        html[data-theme="dark"] .tile,
+        html[data-theme="dark"] .auth-card,
+        html[data-theme="dark"] .btn,
+        html[data-theme="dark"] .input,
+        html[data-theme="dark"] textarea,
+        html[data-theme="dark"] .topbar { background: #292a2d; color: var(--ink); }
+
+        @media (prefers-color-scheme: dark) {
+            html[data-theme="system"] {
+                --ink: #e8eaed;
+                --muted: #9aa0a6;
+                --line: #3c4043;
+                --surface: #202124;
+                --danger: #f28b82;
+            }
+            html[data-theme="system"] body { background: var(--surface); }
+            html[data-theme="system"] .panel,
+            html[data-theme="system"] .tile,
+            html[data-theme="system"] .auth-card,
+            html[data-theme="system"] .btn,
+            html[data-theme="system"] .input,
+            html[data-theme="system"] textarea,
+            html[data-theme="system"] .topbar { background: #292a2d; color: var(--ink); }
         }
 
         * { box-sizing: border-box; }
@@ -175,13 +213,29 @@
         @auth
             <nav class="nav" aria-label="Main navigation">
                 <a href="{{ route('dashboard') }}">Dashboard</a>
+                <a href="{{ route('search.index') }}">Search</a>
                 <a href="{{ route('notes.index') }}">Notes</a>
                 <a href="{{ route('todos.index') }}">To-do</a>
                 <a href="{{ route('events.index') }}">Calendar</a>
                 <a href="{{ route('hymns.index') }}">Hymns</a>
                 <a href="{{ route('bible.index') }}">Bible</a>
                 <a href="{{ route('organizations.index') }}">Organizations</a>
+                <a href="{{ route('directory.index') }}">Directory</a>
+                <a href="{{ route('resources.index') }}">Library</a>
+                <a href="{{ route('jobs.index') }}">Jobs</a>
+                <a href="{{ route('giving.mine') }}">Giving</a>
+                <a href="{{ route('org-events.discover') }}">Events</a>
+                <a href="{{ route('audio.index') }}">Audio</a>
+                @php $unreadNotifications = auth()->user()->unreadNotificationsCount(); @endphp
+                <a href="{{ route('notifications.index') }}">
+                    Notifications
+                    @if ($unreadNotifications > 0)
+                        <span style="background:var(--brand);color:#202124;border-radius:999px;min-width:18px;display:inline-grid;place-items:center;font-size:11px;font-weight:700;padding:0 5px;margin-left:2px;">{{ $unreadNotifications }}</span>
+                    @endif
+                </a>
+                <a href="{{ route('messages.index') }}">Messages</a>
                 <a href="{{ route('profile.show') }}">Profile</a>
+                <a href="{{ route('settings.index') }}">Settings</a>
             </nav>
             <span class="muted">{{ auth()->user()->name }}</span>
             <a class="nav" href="{{ route('language.select') }}">{{ __('messages.change_language') }}</a>

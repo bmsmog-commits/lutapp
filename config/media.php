@@ -16,8 +16,9 @@ return [
 
     'allowed_mimes' => [
         'image' => ['image/jpeg', 'image/png', 'image/webp', 'image/gif'],
+        // application/epub+zip added for Phase 11 book files.
         'document' => ['application/pdf', 'text/plain', 'application/msword',
-            'application/vnd.openxmlformats-officedocument.wordprocessingml.document'],
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'application/epub+zip'],
         'audio' => ['audio/mpeg', 'audio/wav', 'audio/ogg'],
         'video' => ['video/mp4', 'video/webm'],
     ],
