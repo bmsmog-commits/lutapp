@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\AiAssistantController;
 use App\Http\Controllers\BibleController;
 use App\Http\Controllers\ConversationController;
 use App\Http\Controllers\DashboardController;
@@ -160,6 +161,16 @@ Route::middleware('auth')->group(function () {
     Route::post('/email/verification-notification', [AuthController::class, 'verifyResend'])
         ->middleware('throttle:6,1')
         ->name('verification.send');
+
+    // Phase 27.6 — phone verification, mirroring the email routes above.
+    // Reachable only by an account registered without an email address, which
+    // in turn requires a configured SMS provider.
+    Route::get('/phone/verify', [AuthController::class, 'phoneVerifyNotice'])
+        ->name('verification.phone.notice');
+
+    Route::post('/phone/verify', [AuthController::class, 'phoneVerify'])
+        ->middleware('throttle:6,1')
+        ->name('verification.phone.verify');
 });
 
 Route::middleware(['auth', 'verified'])->group(function () {
@@ -196,6 +207,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::delete('/hymns/{hymn}', [HymnController::class, 'destroy'])->name('hymns.destroy');
 
     Route::get('/bible', [BibleController::class, 'index'])->name('bible.index');
+    Route::get('/bible/study', [BibleController::class, 'study'])->name('bible.study');
     Route::get('/bible/search', [BibleController::class, 'search'])->name('bible.search');
     Route::get('/bible/bookmarks', [BibleController::class, 'bookmarks'])->name('bible.bookmarks');
     Route::get('/bible/reading-history', [BibleController::class, 'readingHistory'])->name('bible.reading-history');
@@ -332,6 +344,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::put('/settings/bible', [SettingsController::class, 'updateBible'])->name('settings.bible.update');
     Route::put('/settings/audio', [SettingsController::class, 'updateAudio'])->name('settings.audio.update');
     Route::put('/settings/dashboard', [SettingsController::class, 'updateDashboard'])->name('settings.dashboard.update');
+    Route::put('/settings/communication', [SettingsController::class, 'updateCommunication'])->name('settings.communication.update');
+
+    // Phase 27.6 — AI assistant. Backed only by NullAiAssistant; no vendor is
+    // called and no answer is ever fabricated.
+    Route::get('/ai/status', [AiAssistantController::class, 'status'])->name('ai.status');
+    Route::post('/ai/ask', [AiAssistantController::class, 'ask'])
+        ->middleware('throttle:20,1')
+        ->name('ai.ask');
 
     // Relationship-changing endpoints — throttled against follow/block spam,
     // same mechanism (Laravel's built-in rate limiter) already used for

@@ -1,0 +1,25 @@
+# Lutapp — FrankenPHP (Caddy) configuration.
+#
+# Plain HTTP on :8080 (unprivileged, so the server runs as www-data). TLS is
+# expected to be terminated by the hosting platform / load balancer in front
+# of the container. To let Caddy obtain certificates itself instead, run with
+# SERVER_NAME=your.domain (and publish 80/443); that is a hosting decision.
+{
+	admin off
+	frankenphp
+	auto_https off
+	servers {
+		trusted_proxies static private_ranges
+	}
+}
+
+{$SERVER_NAME::8080} {
+	root * /app/public
+	encode zstd br gzip
+
+	# Fingerprinted Vite assets never change for a given URL.
+	@build path /build/*
+	header @build Cache-Control "public, max-age=31536000, immutable"
+
+	php_server
+}

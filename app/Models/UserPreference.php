@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 #[Fillable([
     'user_id', 'language', 'theme', 'date_format', 'timezone', 'notifications_enabled', 'notification_preferences',
     'privacy_preferences', 'bible_preferences', 'audio_preferences', 'dashboard_preferences',
+    'communication_preferences',
 ])]
 class UserPreference extends Model
 {
@@ -24,6 +25,7 @@ class UserPreference extends Model
             'bible_preferences' => 'array',
             'audio_preferences' => 'array',
             'dashboard_preferences' => 'array',
+            'communication_preferences' => 'array',
         ];
     }
 

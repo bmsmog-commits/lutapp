@@ -54,14 +54,18 @@ class BibleVerseSeeder extends Seeder
             25 => 'And God made the beast of the earth after his kind, and cattle after their kind, and every thing that creepeth upon the earth after his kind: and God saw that it was good.',
             26 => 'And God said, Let us make man in our image, after our likeness: and let them have dominion over the fish of the sea, and over the fowl of the air, and over the cattle, and over all the earth, and over every creeping thing that creepeth upon the earth.',
             27 => 'So God created man in his own image, in the image of God created he him; male and female created he them.',
-            28 => 'And God blessed them, and God said unto them, Be fruitful, and multiply, and replenish the earth, and subdue it.',
+            28 => 'And God blessed them, and God said unto them, Be fruitful, and multiply, and replenish the earth, and subdue it: and have dominion over the fish of the sea, and over the fowl of the air, and over every living thing that moveth upon the earth.',
             29 => 'And God said, Behold, I have given you every herb bearing seed, which is upon the face of all the earth, and every tree, in the which is the fruit of a tree yielding seed; to you it shall be for meat.',
             30 => 'And to every beast of the earth, and to every fowl of the air, and to every thing that creepeth upon the earth, wherein there is life, I have given every green herb for meat: and it was so.',
             31 => 'And God saw every thing that he had made, and, behold, it was very good. And the evening and the morning were the sixth day.',
         ];
 
+        // Phase 27.10 — insert-only. This sample must never overwrite verses
+        // that already exist (e.g. the full imported KJV corpus): with
+        // updateOrCreate, `php artisan db:seed` on a production database
+        // would have rewritten real KJV rows with this sample's text.
         foreach ($verses as $verseNumber => $text) {
-            BibleVerse::updateOrCreate(
+            BibleVerse::firstOrCreate(
                 [
                     'bible_book_id' => $genesis->id,
                     'chapter' => 1,
@@ -74,6 +78,6 @@ class BibleVerseSeeder extends Seeder
             );
         }
 
-        $this->command->info('Genesis 1 KJV imported successfully: 31 verses.');
+        $this->command?->info('Genesis 1 KJV sample ensured (missing verses inserted; existing verses left untouched).');
     }
 }

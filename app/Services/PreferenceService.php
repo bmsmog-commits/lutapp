@@ -30,6 +30,35 @@ class PreferenceService
 
     public const BIBLE_FONT_SIZES = ['small', 'medium', 'large'];
 
+    /**
+     * Phase 27.6 — weekly digest channels. STORAGE ONLY: nothing in this
+     * application sends on any of these channels. `weekly_email` defaults to
+     * opt-in because the user already gave an address at registration and the
+     * app already mails them; the phone channels default to opt-out because
+     * they require a phone number the user may never have given, and because
+     * no SMS/WhatsApp provider is configured at all.
+     */
+    public const COMMUNICATION_CHANNELS = ['weekly_email', 'weekly_whatsapp', 'weekly_sms'];
+
+    private const COMMUNICATION_DEFAULTS = [
+        'weekly_email' => true,
+        'weekly_whatsapp' => false,
+        'weekly_sms' => false,
+    ];
+
+    /** @return array<string, bool> */
+    public function communication(User $user): array
+    {
+        $preferences = $user->preferences?->communication_preferences ?? [];
+
+        $resolved = [];
+        foreach (self::COMMUNICATION_DEFAULTS as $channel => $default) {
+            $resolved[$channel] = (bool) ($preferences[$channel] ?? $default);
+        }
+
+        return $resolved;
+    }
+
     public function theme(User $user): string
     {
         $theme = $user->preferences?->theme;

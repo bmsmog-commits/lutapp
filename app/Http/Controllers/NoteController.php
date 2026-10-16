@@ -48,7 +48,7 @@ class NoteController extends Controller
 
         $request->user()->notes()->create($this->payload($data));
 
-        return redirect()->route('notes.index')->with('status', 'Note created.');
+        return $this->redirectAfterSave($request, 'Note created.');
     }
 
     public function update(Request $request, Note $note): RedirectResponse
@@ -69,7 +69,7 @@ class NoteController extends Controller
 
         $note->update($payload);
 
-        return redirect()->route('notes.index')->with('status', 'Note updated.');
+        return $this->redirectAfterSave($request, 'Note updated.');
     }
 
     public function unlock(Request $request, Note $note): RedirectResponse
@@ -116,7 +116,29 @@ class NoteController extends Controller
             'color' => ['required', 'string', 'in:'.implode(',', $this->colors)],
             'is_pinned' => ['nullable', 'boolean'],
             'passcode' => ['nullable', 'string', 'min:4', 'max:32'],
+            // Phase 27.6 — optional Bible reference from the Bible Study
+            // workspace. Reference metadata only; no verse text is stored.
+            'bible_reference' => ['nullable', 'string', 'max:120'],
+            'bible_book_id' => ['nullable', 'exists:bible_books,id'],
+            'bible_chapter' => ['nullable', 'integer', 'min:1'],
+            'bible_translation_id' => ['nullable', 'exists:bible_translations,id'],
+            'redirect_to' => ['nullable', 'string', 'max:2000'],
         ]);
+    }
+
+    /**
+     * The Bible Study split-screen posts to these same routes and asks to be
+     * sent back to itself. Only an in-app path is ever honoured.
+     */
+    private function redirectAfterSave(Request $request, string $message): RedirectResponse
+    {
+        $target = (string) $request->input('redirect_to', '');
+
+        if ($target !== '' && str_starts_with($target, '/') && ! str_starts_with($target, '//')) {
+            return redirect()->to($target)->with('status', $message);
+        }
+
+        return redirect()->route('notes.index')->with('status', $message);
     }
 
     private function payload(array $data, ?Note $note = null): array
@@ -127,6 +149,15 @@ class NoteController extends Controller
             'color' => $data['color'],
             'is_pinned' => (bool) ($data['is_pinned'] ?? false),
         ];
+
+        // Only write the Bible reference when one was actually submitted, so
+        // editing a note from the ordinary Notes page never clears it.
+        if (array_key_exists('bible_reference', $data)) {
+            $payload['bible_reference'] = $data['bible_reference'] ?: null;
+            $payload['bible_book_id'] = $data['bible_book_id'] ?? null;
+            $payload['bible_chapter'] = $data['bible_chapter'] ?? null;
+            $payload['bible_translation_id'] = $data['bible_translation_id'] ?? null;
+        }
 
         if (filled($data['passcode'] ?? null)) {
             $payload['passcode_hash'] = Hash::make($data['passcode']);

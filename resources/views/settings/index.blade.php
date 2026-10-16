@@ -153,6 +153,40 @@
             </form>
         </div>
 
+        {{-- WEEKLY UPDATES (Phase 27.6) --}}
+        {{-- Storage only. Lutapp does not currently send on any of these
+             channels, and no SMS/WhatsApp provider is configured. --}}
+        <div class="panel" data-testid="communication-preferences">
+            <h2>{{ __('messages.communication_preferences') }}</h2>
+            <form method="post" action="{{ route('settings.communication.update') }}">
+                @csrf @method('PUT')
+                <p class="muted">{{ __('messages.communication_preferences_note') }}</p>
+
+                <label style="display:flex;align-items:center;gap:8px;margin-top:6px;">
+                    <input type="checkbox" name="weekly_email" value="1" @checked($communication['weekly_email'])>
+                    {{ __('messages.weekly_email') }}
+                </label>
+
+                <label style="display:flex;align-items:center;gap:8px;margin-top:4px;">
+                    <input type="checkbox" name="weekly_whatsapp" value="1" @checked($communication['weekly_whatsapp'])>
+                    {{ __('messages.weekly_whatsapp') }}
+                    @unless ($whatsAppProviderConfigured)
+                        <span class="badge badge-muted">{{ __('messages.channel_provider_not_configured') }}</span>
+                    @endunless
+                </label>
+
+                <label style="display:flex;align-items:center;gap:8px;margin-top:4px;">
+                    <input type="checkbox" name="weekly_sms" value="1" @checked($communication['weekly_sms'])>
+                    {{ __('messages.weekly_sms') }}
+                    @unless ($smsProviderConfigured)
+                        <span class="badge badge-muted">{{ __('messages.channel_provider_not_configured') }}</span>
+                    @endunless
+                </label>
+
+                <button class="btn-primary" type="submit" style="margin-top:12px;">Save weekly update preferences</button>
+            </form>
+        </div>
+
         {{-- SECURITY --}}
         <div class="panel">
             <h2>Security</h2>

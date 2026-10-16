@@ -1,9 +1,64 @@
-.git
-.github
+# Lutapp Docker build context — anything listed here can never reach the image.
+# Note: bare patterns (e.g. *.sqlite) only match at the context ROOT in Docker;
+# file-type rules therefore use **/ so they match at any depth.
+
+# --- Secrets & local configuration --------------------------------------
+**/.env
+**/.env.*
+!.env.example
+**/auth.json
+**/*.pem
+**/*.key
+storage/*.key
+
+# --- Databases, dumps & backups -----------------------------------------
+**/*.sqlite
+**/*.sqlite3
+**/*.sqlite-journal
+**/*.sql
+**/*.sql.gz
+**/*.dump
+**/*.bak
+
+# --- User uploads, logs & runtime caches (persistent volume at runtime) --
+storage/app/*
+!storage/app/.gitignore
+!storage/app/public/
+storage/app/public/*
+!storage/app/public/.gitignore
+!storage/app/private/
+storage/app/private/*
+!storage/app/private/.gitignore
+storage/logs/*
+storage/framework/cache/*
+storage/framework/sessions/*
+storage/framework/views/*
+storage/framework/testing/*
+storage/pail
+bootstrap/cache/*.php
+
+# --- Rebuilt inside the image ---------------------------------------------
 vendor
 node_modules
-.env
-storage/logs
-storage/framework/cache
-storage/framework/sessions
-storage/framework/views
+public/build
+public/hot
+public/storage
+
+# --- Development, tests & tooling --------------------------------------
+.git
+.github
+.idea
+.vscode
+.zed
+.cursor
+.codex
+.nova
+.phpunit.cache
+.phpunit.result.cache
+phpunit.xml
+tests
+docs
+Homestead.*
+**/*.log
+**/Thumbs.db
+**/.DS_Store

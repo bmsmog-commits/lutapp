@@ -32,5 +32,8 @@
         <env name="PULSE_ENABLED" value="false"/>
         <env name="TELESCOPE_ENABLED" value="false"/>
         <env name="NIGHTWATCH_ENABLED" value="false"/>
+        <!-- Phase 27.10: tests never see a real API.Bible key; tests that need
+             one set a fake key and fake every HTTP response. -->
+        <env name="API_BIBLE_API_KEY" value=""/>
     </php>
 </phpunit>
