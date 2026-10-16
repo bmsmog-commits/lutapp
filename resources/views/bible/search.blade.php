@@ -16,16 +16,79 @@
                 </button>
             </form>
             <p class="text-sm text-gray-600">
-                {{ __('messages.translation') }}: <strong>{{ $translation->name }}</strong>
+                {{ __('messages.translation') }}: <strong>{{ $translation->name }} ({{ $translation->code }})</strong>
+            </p>
+            {{-- Phase 27.9 — always say which text is being searched. --}}
+            <p class="text-sm text-gray-600 mt-1" data-testid="bible-search-mode" data-mode="{{ $mode }}">
+                @if ($mode === 'local')
+                    {{ __('messages.bible_search_mode_local', ['translation' => $translation->code]) }}
+                @elseif ($mode === 'remote')
+                    {{ __('messages.bible_search_mode_remote', ['translation' => $translation->code]) }}
+                @endif
             </p>
         </div>
 
-        <!-- Results -->
-        @if($query)
+        @php
+            $localSearchUrl = $localTranslation
+                ? route('bible.search', array_filter(['q' => $query, 'translation_id' => $localTranslation->id]))
+                : null;
+        @endphp
+
+        @if ($mode === 'unsupported')
+            {{-- Never an empty result list for a translation we cannot search. --}}
+            <div class="bg-white rounded-lg shadow p-6" data-testid="bible-search-unsupported">
+                <h2 class="text-xl font-bold mb-2">{{ __('messages.bible_search_unsupported_title', ['translation' => $translation->code]) }}</h2>
+                <p class="text-gray-600">{{ __('messages.bible_search_unsupported_body', ['translation' => $translation->name]) }}</p>
+                @if ($localSearchUrl)
+                    <a class="btn btn-primary" style="margin-top:12px;display:inline-block;" href="{{ $localSearchUrl }}">
+                        {{ __('messages.bible_search_in_local', ['translation' => $localTranslation->code]) }}
+                    </a>
+                @endif
+            </div>
+        @elseif ($remoteError)
+            <div class="bg-white rounded-lg shadow p-6" data-testid="bible-search-remote-error" data-remote-error="{{ $remoteError }}">
+                <h2 class="text-xl font-bold mb-2">{{ __('messages.bible_search_remote_error_title') }}</h2>
+                <p class="text-gray-600">{{ __('messages.api_bible_error_'.$remoteError) }}</p>
+                @if ($localSearchUrl)
+                    <a class="btn btn-primary" style="margin-top:12px;display:inline-block;" href="{{ $localSearchUrl }}">
+                        {{ __('messages.bible_search_in_local', ['translation' => $localTranslation->code]) }}
+                    </a>
+                @endif
+            </div>
+        @elseif($query)
             <div class="bg-white rounded-lg shadow p-6">
                 <h2 class="text-2xl font-bold mb-6">
-                    {{ count($verses) }} {{ __('messages.results_for') }} "{{ $query }}"
+                    {{ $remoteResult ? $remoteResult->total : count($verses) }} {{ __('messages.results_for') }} "{{ $query }}"
                 </h2>
+
+                @if ($remoteResult && $remoteResult->passageReferences->isNotEmpty())
+                    <div class="mb-6" data-testid="bible-search-passages">
+                        <h3 class="font-semibold mb-2">{{ __('messages.bible_search_passage_matches') }}</h3>
+                        <ul>
+                            @foreach ($remoteResult->passageReferences as $passage)
+                                @php $passageBook = $books->get(\App\Services\Bible\ApiBible\UsfmBooks::sortOrderFor($passage['usfm_book'])); @endphp
+                                @if ($passageBook)
+                                    <li>
+                                        <a class="text-blue-600 hover:underline"
+                                           href="{{ route('bible.index', ['book' => $passageBook->id, 'chapter' => $passage['chapter'], 'translation_id' => $translation->id]) }}">
+                                            {{ $passage['reference'] }}
+                                        </a>
+                                    </li>
+                                @endif
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
+
+                @if ($remoteResult && $remoteResult->total > 0)
+                    <p class="text-sm text-gray-600 mb-4">
+                        {{ __('messages.bible_search_showing', [
+                            'from' => $remoteResult->offset + 1,
+                            'to' => $remoteResult->offset + $remoteResult->hits->count(),
+                            'total' => $remoteResult->total,
+                        ]) }}
+                    </p>
+                @endif
 
                 @if(count($verses) > 0)
                     <div class="space-y-6">
@@ -95,8 +158,33 @@
                             </div>
                         @endforeach
                     </div>
-                @else
-                    <p class="text-gray-500 text-center py-8">{{ __('messages.no_verses_found') }}</p>
+                @elseif (! $remoteResult || $remoteResult->passageReferences->isEmpty())
+                    {{-- An empty result is never presented as proof a passage does not exist. --}}
+                    <div class="text-center py-8" data-testid="bible-search-no-matches">
+                        <p class="text-gray-700">{{ __('messages.bible_search_no_matches', ['query' => $query, 'translation' => $translation->code]) }}</p>
+                        <p class="text-gray-500 text-sm mt-2">{{ __('messages.bible_search_no_matches_caveat') }}</p>
+                    </div>
+                @endif
+
+                @if ($remoteResult && $remoteResult->offset + $remoteResult->hits->count() < $remoteResult->total)
+                    <p class="mt-6">
+                        <a class="btn" href="{{ route('bible.search', ['q' => $query, 'translation_id' => $translation->id, 'page' => $page + 1]) }}">
+                            {{ __('messages.bible_search_more') }} →
+                        </a>
+                    </p>
+                @endif
+
+                @if ($remoteResult)
+                    <footer class="text-gray-500 text-xs mt-6 pt-3 border-t" data-testid="api-bible-attribution">
+                        <p>{{ $remoteCopyright ?: $translation->license }}</p>
+                        <p>{{ __('messages.api_bible_source') }}</p>
+                    </footer>
+                    @if ($remoteResult->hits->isNotEmpty())
+                        @include('bible.partials.fums', [
+                            'fumsToken' => $remoteResult->fumsToken,
+                            'fumsFromCache' => $remoteResult->fromCache,
+                        ])
+                    @endif
                 @endif
             </div>
         @else

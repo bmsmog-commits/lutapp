@@ -6,6 +6,8 @@ use App\Models\BibleTranslation;
 use App\Models\Notification;
 use App\Models\SecurityQuestion;
 use App\Models\User;
+use App\Services\Messaging\SmsVerificationProvider;
+use App\Services\Messaging\WhatsAppProvider;
 use App\Services\PreferenceService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -38,7 +40,34 @@ class SettingsController extends Controller
             'dashboardSections' => $preferences->dashboardSections($user),
             'allDashboardSections' => PreferenceService::DASHBOARD_SECTIONS,
             'securityQuestion' => $user->securityQuestions()->latest()->first(),
+            'communication' => $preferences->communication($user),
+            'smsProviderConfigured' => app(SmsVerificationProvider::class)->isConfigured(),
+            'whatsAppProviderConfigured' => app(WhatsAppProvider::class)->isConfigured(),
         ]);
+    }
+
+    /**
+     * Phase 27.6 — weekly digest channel toggles. This only persists the
+     * preference; nothing in this application sends a weekly email, SMS or
+     * WhatsApp message, and no provider is configured to do so.
+     */
+    public function updateCommunication(Request $request): RedirectResponse
+    {
+        $request->validate(
+            collect(PreferenceService::COMMUNICATION_CHANNELS)
+                ->mapWithKeys(fn (string $channel) => [$channel => ['nullable', 'boolean']])
+                ->all()
+        );
+
+        $values = collect(PreferenceService::COMMUNICATION_CHANNELS)
+            ->mapWithKeys(fn (string $channel) => [$channel => $request->boolean($channel)])
+            ->all();
+
+        $request->user()->preferences()->updateOrCreate([], [
+            'communication_preferences' => $values,
+        ]);
+
+        return redirect()->route('settings.index')->with('status', 'Communication preferences updated.');
     }
 
     public function updateAccount(Request $request): RedirectResponse

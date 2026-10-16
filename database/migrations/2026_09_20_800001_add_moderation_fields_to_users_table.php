@@ -35,6 +35,12 @@ return new class extends Migration
 
     public function down(): void
     {
+        // Phase 27.10 — drop the index first: SQLite cannot drop a column an
+        // index still references, so rollback failed there.
+        Schema::table('users', function (Blueprint $table) {
+            $table->dropIndex(['account_status']);
+        });
+
         Schema::table('users', function (Blueprint $table) {
             $table->dropColumn(['is_moderator', 'account_status', 'account_status_reason', 'account_status_changed_at']);
         });

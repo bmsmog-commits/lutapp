@@ -2,8 +2,51 @@
 
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../storage/framework/views/*.php';
+@source '../views/**/*.blade.php';
 
+/*
+ * Lutapp design system — Phase 27.5
+ *
+ * The palette below is the single source of truth. The shared Blade layout
+ * (resources/views/layouts/app.blade.php) mirrors these same values as plain
+ * CSS custom properties so that legacy hand-written classes (.panel, .tile,
+ * .btn, .row, .muted) and Tailwind utilities stay visually in sync.
+ */
 @theme {
     --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
         'Segoe UI Symbol', 'Noto Color Emoji';
+    --font-serif: 'Iowan Old Style', 'Palatino Linotype', 'Book Antiqua', Georgia, serif;
+
+    /* Brand — gold stays primary (unchanged Lutapp identity) */
+    --color-lut-gold-50: #fffbeb;
+    --color-lut-gold-100: #fef3c7;
+    --color-lut-gold-200: #fde68a;
+    --color-lut-gold-400: #fbbc04;
+    --color-lut-gold-500: #f0ab00;
+    --color-lut-gold-600: #c98a00;
+    --color-lut-gold-700: #9a6800;
+
+    /* Secondary — deep navy / royal blue */
+    --color-lut-navy-50: #eef2ff;
+    --color-lut-navy-100: #dbe3fb;
+    --color-lut-navy-500: #2f4b8f;
+    --color-lut-navy-700: #1d2f5c;
+    --color-lut-navy-900: #121c38;
+
+    /* Feature accents */
+    --color-lut-bible: #6d28d9;      /* violet  — Bible */
+    --color-lut-community: #0d9488;  /* teal    — community / orgs / directory */
+    --color-lut-jobs: #059669;       /* emerald — jobs */
+    --color-lut-events: #ea580c;     /* coral   — events */
+    --color-lut-audio: #4f46e5;      /* indigo  — audio */
+    --color-lut-giving: #b45309;     /* gold+   — giving */
+    --color-lut-alert: #e11d48;      /* coral   — notifications */
+    --color-lut-messages: #2563eb;   /* blue    — messages */
+
+    /* Neutrals */
+    --color-lut-surface: #faf8f4;    /* warm off-white page background */
+    --color-lut-card: #ffffff;
+    --color-lut-line: #e6e2da;
+    --color-lut-ink: #1b1d23;        /* deep charcoal-navy text */
+    --color-lut-muted: #63676f;
 }

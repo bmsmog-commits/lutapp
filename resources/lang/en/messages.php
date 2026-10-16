@@ -75,4 +75,83 @@ return [
     'date_format' => 'M d, Y',
     'datetime_format' => 'M d, Y g:i A',
     'verse_text_not_available' => 'Verse text not available (import verses to see text)',
+
+    // Phase 27.5 — translation availability / empty state
+    'translation_available' => 'Available',
+    'translation_not_available' => 'Not yet available',
+    'translation_text_not_imported_title' => 'This translation has not been added to Lutapp yet',
+    'translation_text_not_imported_body' => ':reference is a valid chapter, and :translation is a translation Lutapp knows about — but its verse text has not been imported into this installation yet. This is not an error, and nothing is missing from your account.',
+    'translation_text_licensed_note' => 'This translation is not marked as redistributable, so Lutapp will not display or store its text until the appropriate licence is in place.',
+    'translation_read_in' => 'Read :translation instead',
+    'choose_another_translation' => 'Choose another translation',
+
+    // Phase 27.6 — richer availability states
+    'translation_state_available' => 'Available locally',
+    'translation_state_remote' => 'Available remotely',
+    // Phase 27.8 — API.Bible
+    'api_bible_source' => 'Scripture text provided by API.Bible. Not stored in Lutapp.',
+    'api_bible_error_title' => 'This chapter could not be loaded right now',
+    'api_bible_error_not_configured' => 'The online Bible service is not configured on this installation.',
+    'api_bible_error_unauthorized' => 'The online Bible service did not authorise access to this translation.',
+    'api_bible_error_not_found' => 'This chapter is not available in this translation from the online Bible service.',
+    'api_bible_error_rate_limited' => 'The online Bible service is receiving too many requests. Please try again in a minute.',
+    'api_bible_error_unavailable' => 'The online Bible service could not be reached. Please try again shortly.',
+    // Phase 27.9 — Bible search modes
+    'bible_search_mode_local' => 'Searching the text stored in Lutapp for :translation.',
+    'bible_search_mode_remote' => 'Searching :translation through API.Bible.',
+    'bible_search_unsupported_title' => ':translation cannot be searched here',
+    'bible_search_unsupported_body' => 'Lutapp has no local text for :translation and it is not available from the online Bible service, so the search service cannot search it.',
+    'bible_search_remote_error_title' => 'The online Bible search could not run',
+    'bible_search_in_local' => 'Search :translation instead',
+    'bible_search_no_matches' => 'No matches for “:query” in :translation.',
+    'bible_search_no_matches_caveat' => 'Search matches words in this translation’s exact wording, so a passage may still exist under different words or in another translation.',
+    'bible_search_showing' => 'Showing :from–:to of :total matches',
+    'bible_search_passage_matches' => 'Matching passages',
+    'bible_search_more' => 'More results',
+    'translation_state_license_required' => 'Licence verification required',
+    'translation_state_not_in_account' => 'Not available to this account',
+    'translation_state_temporarily_unavailable' => 'Provider temporarily unavailable',
+    'translation_state_coming_soon' => 'Coming soon',
+    'translation_state_not_available' => 'Not available',
+    'translation_state_not_imported' => 'Not yet imported',
+    'translation_state_licensed_unavailable' => 'Not yet available',
+    'translation_license_held_by' => 'Copyright :holder',
+
+    // Phase 27.6 — Bible Study split screen
+    'bible_study' => 'Bible Study',
+    'bible_study_intro' => 'Read on one side, take notes on the other.',
+    'tab_bible' => 'Bible',
+    'tab_notes' => 'Notes',
+    'insert_reference' => 'Insert reference',
+    'note_body' => 'Note',
+    'note_title' => 'Title',
+    'save_note' => 'Save note',
+    'linked_reference' => 'Linked reference',
+    'no_chapter_selected' => 'Choose a book and chapter to begin.',
+    'recent_notes' => 'Recent notes',
+    'no_notes_yet' => 'You have not written any notes yet.',
+    'open_chapter' => 'Open chapter',
+
+    // Phase 27.6 — continue reading (24-hour window)
+    'continue_reading' => 'Continue reading',
+    'continue_reading_window' => 'Your last 24 hours of reading. Bookmarks and highlights are kept permanently.',
+    'nothing_read_recently' => 'Nothing read in the last 24 hours.',
+
+    // Phase 27.6 — AI assistant (no provider is configured; nothing is faked)
+    'ai_title' => 'Study assistant',
+    'ai_open' => 'Open the study assistant',
+    'ai_close' => 'Close the study assistant',
+    'ai_send' => 'Ask',
+    'ai_ready' => 'The study assistant is ready.',
+    'ai_prompt_label' => 'Ask a question about what you are studying',
+    'ai_not_configured' => 'AI assistant is not yet configured.',
+    'ai_not_configured_detail' => 'No AI provider has been connected to this installation, so Lutapp will not answer here. It will never invent an answer or a Bible verse in the meantime.',
+
+    // Phase 27.6 — communication preferences (storage only, nothing is sent)
+    'communication_preferences' => 'Weekly updates',
+    'communication_preferences_note' => 'These choices are saved for a future weekly digest. Lutapp does not currently send any weekly email, SMS or WhatsApp message.',
+    'weekly_email' => 'Weekly email',
+    'weekly_whatsapp' => 'Weekly WhatsApp message',
+    'weekly_sms' => 'Weekly SMS',
+    'channel_provider_not_configured' => 'No provider is configured for this channel yet.',
 ];

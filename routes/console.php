@@ -5,6 +5,22 @@ use App\Models\BibleTranslation;
 use App\Models\BibleVerse;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Schedule;
+
+/*
+ * Phase 27.6 — the application's first scheduled task.
+ *
+ * IMPORTANT: registering it here does NOT make it run. A production host must
+ * add the Laravel scheduler cron entry manually:
+ *
+ *     * * * * * cd /path/to/Lutapp && php artisan schedule:run >> /dev/null 2>&1
+ *
+ * Without that cron entry (which is the case in this local dev environment)
+ * nothing is pruned automatically. The 24-hour cutoff is still enforced at read
+ * time by BibleReadingHistory::scopeNotExpired(), so expired entries are never
+ * surfaced to a user even when the cleanup has not run.
+ */
+Schedule::command('bible:prune-reading-history')->hourly();
 
 Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());

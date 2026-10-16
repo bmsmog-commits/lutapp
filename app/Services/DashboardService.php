@@ -167,7 +167,11 @@ class DashboardService
     private function bibleActivity(User $user): array
     {
         return [
-            'recentReading' => BibleReadingHistory::where('user_id', $user->id)->with(['book', 'translation'])
+            // Phase 27.6 — only reading inside the 24-hour retention window is
+            // surfaced. Bookmarks below are permanent and deliberately unfiltered.
+            'recentReading' => BibleReadingHistory::where('user_id', $user->id)
+                ->notExpired()
+                ->with(['book', 'translation'])
                 ->latest('last_read_at')->limit(3)->get(),
             'bookmarks' => BibleBookmark::where('user_id', $user->id)->with(['book', 'translation'])
                 ->latest()->limit(3)->get(),

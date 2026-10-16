@@ -2,7 +2,6 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
@@ -63,17 +62,11 @@ return new class extends Migration
             return false;
         }
 
-        $connection = Schema::getConnection();
-        $driver = $connection->getDriverName();
+        // Phase 27.10 — driver-agnostic (was SHOW INDEX, which is MySQL-only
+        // and broke a fresh PostgreSQL migrate). Same decision on every driver.
+        $index = collect(Schema::getIndexes('bible_verses'))
+            ->first(fn (array $index) => $index['name'] === 'bible_verse_unique');
 
-        if ($driver === 'sqlite') {
-            $columns = collect($connection->select("PRAGMA index_info('bible_verse_unique')"))
-                ->pluck('name');
-        } else {
-            $columns = collect(DB::select("SHOW INDEX FROM bible_verses WHERE Key_name = 'bible_verse_unique'"))
-                ->pluck('Column_name');
-        }
-
-        return $columns->contains('translation_id');
+        return in_array('translation_id', $index['columns'] ?? [], true);
     }
 };

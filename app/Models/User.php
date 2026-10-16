@@ -15,7 +15,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Spatie\Permission\Traits\HasRoles;
 
-#[Fillable(['name', 'email', 'password'])]
+#[Fillable(['name', 'email', 'phone', 'password'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable implements MustVerifyEmail
 {
@@ -191,10 +191,39 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         return [
             'email_verified_at' => 'datetime',
+            'phone_verified_at' => 'datetime',
             'password' => 'hashed',
             'is_moderator' => 'boolean',
             'account_status_changed_at' => 'datetime',
         ];
+    }
+
+    /**
+     * Phase 27.6 — phone as an optional alternative identifier.
+     *
+     * For every existing account (all of which have an email address) this
+     * returns exactly what Laravel's MustVerifyEmail contract returned before:
+     * the parent implementation. Only an account created *without* an email —
+     * possible solely when a real SMS provider is configured — falls through to
+     * the phone equivalent, so the `verified` middleware still gates the app.
+     */
+    public function hasVerifiedEmail(): bool
+    {
+        if (blank($this->email)) {
+            return $this->phone_verified_at !== null;
+        }
+
+        return parent::hasVerifiedEmail();
+    }
+
+    public function hasVerifiedPhone(): bool
+    {
+        return filled($this->phone) && $this->phone_verified_at !== null;
+    }
+
+    public function primaryIdentifier(): string
+    {
+        return $this->email ?? $this->phone ?? (string) $this->id;
     }
 
     // Deliberately independent of Spatie's org-scoped roles — see the

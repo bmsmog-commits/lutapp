@@ -23,9 +23,29 @@
                     <label for="name">Name</label>
                     <input class="input" id="name" name="name" value="{{ old('name') }}" required autofocus>
                 </div>
+                @php
+                    // Phase 27.6 — phone-only sign-up requires a real SMS
+                    // provider; with none configured an email address stays
+                    // required and the phone field is an optional extra.
+                    $phoneSignupAvailable = app(\App\Services\Messaging\SmsVerificationProvider::class)->isConfigured();
+                @endphp
                 <div class="field">
-                    <label for="email">Email</label>
-                    <input class="input" id="email" name="email" type="email" value="{{ old('email') }}" required>
+                    <label for="email">Email{{ $phoneSignupAvailable ? ' (or use a phone number below)' : '' }}</label>
+                    <input class="input" id="email" name="email" type="email" value="{{ old('email') }}"
+                           @unless ($phoneSignupAvailable) required @endunless>
+                </div>
+                <div class="field">
+                    <label for="phone">Phone number (optional)</label>
+                    <input class="input" id="phone" name="phone" type="tel" value="{{ old('phone') }}"
+                           autocomplete="tel" placeholder="+234 800 000 0000">
+                    <small class="muted" style="display:block;margin-top:6px;">
+                        @if ($phoneSignupAvailable)
+                            You can sign up with a phone number instead of an email address.
+                        @else
+                            Saved to your account. Lutapp cannot send SMS or WhatsApp messages yet,
+                            so an email address is still required to sign up.
+                        @endif
+                    </small>
                 </div>
                 <div class="field">
                     <label for="password">Password</label>
